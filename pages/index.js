@@ -20,7 +20,10 @@ const GetUser = (userId) => {
   return userData;
 };
 
-const DeleteUser = userId => remove(ref(db, "users/" + userId));
+const DeleteUser = (userId, users) => {
+  remove(ref(db, "users/" + userId));
+  return users.length > 1 ? users.filter(user => user.id !== userId) : [];
+};
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -35,8 +38,6 @@ export default function Home() {
       typeof getUsers !== "undefined" ? setUsers(Object.values(getUsers)) : "";
     });
   }, []);
-
-  useEffect(() => console.log(users), [users])
 
   return (
     <Fragment>
@@ -78,11 +79,14 @@ export default function Home() {
               <br />
               <input type="text" readOnly={true} value={user.id} /><br/>
               <button
-                onClick={() => DeleteUser(user.id)}
+                onClick={() => setUsers(DeleteUser(user.id, users))}
                 type="button"
               >Delete</button>
             </li>
           ))}
+        {!users.length && (
+          <span style={{ color: "#666" }}>No users./.</span>
+        )}
       </ul>
     </Fragment>
   );
