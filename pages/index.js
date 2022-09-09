@@ -1,5 +1,5 @@
 import { db } from "../src/firebase";
-import { set, ref, onValue } from "firebase/database";
+import { set, ref, onValue, remove } from "firebase/database";
 import { uid } from "uid";
 import { useEffect, useState, Fragment } from "react";
 
@@ -20,6 +20,8 @@ const GetUser = (userId) => {
   return userData;
 };
 
+const DeleteUser = userId => remove(ref(db, "users/" + userId));
+
 export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,9 +31,12 @@ export default function Home() {
     onValue(ref(db), (snapshot) => {
       const data = snapshot.val();
       const getUsers = data?.users;
-      setUsers(Object.values(getUsers));
+
+      typeof getUsers !== "undefined" ? setUsers(Object.values(getUsers)) : "";
     });
   }, []);
+
+  useEffect(() => console.log(users), [users])
 
   return (
     <Fragment>
@@ -50,12 +55,14 @@ export default function Home() {
         <input
           type="text"
           placeholder="Your email.."
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         ></input>
         <br />
         <input
           type="password"
           placeholder="Your password.."
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
         ></input>
         <br />
@@ -69,7 +76,11 @@ export default function Home() {
               <h2>{user.email}</h2>
               <span>{user.password}</span>
               <br />
-              <input type="text" readOnly={true} value={user.id} />
+              <input type="text" readOnly={true} value={user.id} /><br/>
+              <button
+                onClick={() => DeleteUser(user.id)}
+                type="button"
+              >Delete</button>
             </li>
           ))}
       </ul>
